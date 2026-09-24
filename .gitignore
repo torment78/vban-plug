@@ -1,0 +1,12 @@
+/build/
+/out/
+/.vs/
+/external/JUCE/
+*.user
+CMakeUserPresets.json
+
+.env
+.env.*
+*.pfx
+*.p12
+*.key

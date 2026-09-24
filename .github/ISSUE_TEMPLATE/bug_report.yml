@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a problem with VBAN Plug TX, RX, or the installer.
+title: "[Bug]: "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: VBAN Plug version
+      placeholder: "0.1.1"
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Windows and audio host versions
+      placeholder: "Windows 11, host name and version, x64"
+    validations:
+      required: true
+  - type: textarea
+    id: audio
+    attributes:
+      label: Audio and network setup
+      description: Include sample rate, host block size, TX/RX, PCM format, mono/stereo, and whether this is one PC or two. Exact IP addresses are not needed.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do, what happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: counters
+    attributes:
+      label: Packet counters, status, or screenshots
+      description: Include the visible status and whether the TX/RX counters and meters move.

@@ -1,0 +1,41 @@
+VBAN Plug @VERSION@ | ElkaSoft
+Windows x64 | VST3 | TX + RX
+
+INSTALLER
+Run VBAN-Plug-@VERSION@-Windows-x64-Setup.exe and follow the wizard.
+Both plug-ins install to C:\Program Files\Common Files\VST3.
+The installer needs administrator access for that standard location.
+The guide and uninstaller are in C:\Program Files\ElkaSoft\VBAN Plug.
+Uninstall through Windows Settings > Apps > Installed apps > VBAN Plug TX + RX.
+
+PORTABLE ZIP / MANUAL INSTALL
+Extract the ZIP. Inside its VBAN Plug folder, copy the COMPLETE folders
+"VBAN Plug TX.vst3" and "VBAN Plug RX.vst3" to:
+C:\Program Files\Common Files\VST3
+Keep Contents, Resources, moduleinfo.json and x86_64-win files together.
+Rescan VST3 plug-ins in your audio host. Use either installer or manual copying.
+
+QUICK LOCAL TEST
+1. Load RX on a stereo track. Sender IP: 127.0.0.1, local port: 6980,
+   stream name: VBAN. Enable network audio.
+2. Load TX on a different track with audio. Destination IP: 127.0.0.1,
+   destination port: 6980, stream name: VBAN. Enable network audio.
+3. Use the same sample rate in the host and sender, e.g. 48000 Hz.
+4. Check Packets sent / Packets received and the L/R meters.
+5. Avoid routing RX back into TX.
+
+TX preserves host audio; its network stream can use PCM16/24 and mono/stereo.
+RX receives one matching IP and stream; it detects PCM format and channels.
+For another PC use its real network IP and allow your host through the
+Windows firewall for the chosen UDP port. Setup changes no firewall rules.
+No separate Microsoft Visual C++ runtime download is needed.
+
+SUPPORT ELKASOFT
+The installer's Donate button opens https://ko-fi.com/msffixit.
+Donating is optional and does not affect installation.
+
+VBAN Plug is made by ElkaSoft. The VBAN protocol and Voicemeeter are by VB-Audio.
+See README.md for settings and technical details.
+This MVP test release is unsigned.
+GNU AGPL v3; see LICENSE and NOTICE.md.
+Source and releases: https://github.com/torment78/vban-plug

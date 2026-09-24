@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an improvement to VBAN Plug.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What would this help you do?
+      description: Describe the workflow or problem.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested change
+    validations:
+      required: true
