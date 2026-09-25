@@ -18,7 +18,7 @@ private:
     VbanProcessor& processor;
     juce::LookAndFeel_V4 theme;
     StereoMeter meters;
-    juce::Label title, subtitle, addressLabel, portLabel, nameLabel, bitsLabel, channelsLabel, statusLabel, note, errorLabel;
+    juce::Label title, subtitle, addressLabel, portLabel, nameLabel, bitsLabel, channelsLabel, statusLabel, note, errorLabel, ioLabel, ioValue;
     juce::TextEditor address, port, stream;
     juce::ComboBox bits, channels;
     juce::ToggleButton enabled {"Enable network audio"};

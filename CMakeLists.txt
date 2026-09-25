@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(VBANPlug VERSION 0.1.1 LANGUAGES C CXX)
+project(VBANPlug VERSION 0.2.0 LANGUAGES C CXX)
 # Keep the Windows release self-contained (no separate VC++ runtime installer).
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_STANDARD 17)
@@ -41,7 +41,7 @@ foreach(direction IN ITEMS TX RX)
         Source/NetworkEngine.cpp Source/NetworkEngine.h Source/ReceiveBuffer.h
         Source/PluginProcessor.cpp Source/PluginProcessor.h
         Source/PluginEditor.cpp Source/PluginEditor.h Source/PluginEntry.cpp
-        Source/Metering.h Source/StereoMeter.h Source/StereoMeter.cpp)
+        Source/ChannelRouting.h Source/Metering.h Source/StereoMeter.h Source/StereoMeter.cpp)
     target_include_directories(${plugin_target} PUBLIC Source)
     target_compile_definitions(${plugin_target} PRIVATE VBAND_IS_RX=${is_rx})
     target_compile_definitions(${plugin_target} PUBLIC
@@ -52,7 +52,7 @@ endforeach()
 include(CTest)
 if(BUILD_TESTING)
     juce_add_console_app(VBANPlugTests PRODUCT_NAME "VBAN Plug Tests")
-    target_sources(VBANPlugTests PRIVATE Tests/Tests.cpp)
+    target_sources(VBANPlugTests PRIVATE Tests/Tests.cpp Tests/MultichannelTests.h)
     target_compile_definitions(VBANPlugTests PRIVATE JUCE_PLUGINHOST_VST3=1)
     target_link_libraries(VBANPlugTests PRIVATE VBANPlugTX juce::juce_audio_utils)
     add_dependencies(VBANPlugTests VBANPlugTX_VST3 VBANPlugRX_VST3)

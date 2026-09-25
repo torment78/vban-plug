@@ -27,7 +27,7 @@ static void protocolTests() {
     check(!vband::validName("12345678901234567") && !vband::validName(""), "Reject invalid names");
     check(vband::validAddress("127.0.0.1") && !vband::validAddress("300.1.2.3") && !vband::validAddress("224.0.0.1"), "Validate unicast IPv4");
     std::array<std::uint8_t, vband::maxDatagram> wire {};
-    for (int bits : {16, 24}) for (int channels : {1, 2}) {
+    for (int bits : {16, 24}) for (int channels = 1; channels <= 8; ++channels) {
         vband::AudioPacket p, decoded;
         p.bits = bits; p.channels = channels; p.frames = std::min(256, 1436 / (channels * bits / 8));
         p.rate = 48000; p.name = vband::streamName("1234567890123456"); p.sequence = 0xfedcba98u;
@@ -130,8 +130,8 @@ static void meterTests() {
     for (int i = 0; i < 480; ++i) monoAudio.setSample(0, i, -0.75f);
     mono.measure(monoAudio, juce::Time::getMillisecondCounter());
     levels = mono.read();
-    check(levels.rms[0] == levels.rms[1] && levels.peak[0] == 0.75f && levels.peak[1] == 0.75f,
-        "Mono input is shown on both meter channels");
+    check(levels.channels == 1 && levels.rms[0] > 0 && levels.rms[1] == 0 && levels.peak[0] == 0.75f && levels.peak[1] == 0,
+        "Mono input is shown on exactly one meter");
     tx->releaseResources(); levels = tx->meterState().read();
     check(levels.timestamp == 0 && levels.rms[0] == 0 && levels.peak[0] == 0, "Stopping audio clears metering");
 }
@@ -157,14 +157,16 @@ static void networkTests() {
         for (int n = 0; n < 90; ++n) {
             for (int i = 0; i < 256; ++i) { input.setSample(0, i, 0.25f); input.setSample(1, i, 0.75f); }
             tx->processBlock(input, midi); juce::Thread::sleep(5); rx->processBlock(output, midi);
-            if (output.getMagnitude(0, 256) > 0.1f) {
+            // Allow old buffered audio to drain during a live format change.
+            if (n > 10 && rx->engine().incomingBits == bits && rx->engine().incomingChannels == channels
+                && output.getMagnitude(0, 256) > 0.1f) {
                 const float expected = channels == 1 ? 0.5f : 0.25f;
                 check(std::abs(output.getSample(0, 0) - expected) < 0.001f, "Received left/mono audio");
                 check(std::abs(output.getSample(1, 0) - (channels == 1 ? 0.5f : 0.75f)) < 0.001f, "Received right audio");
                 heard = true;
                 if (!meterChecked && n > 25) {
                     const auto meter = rx->meterState().read();
-                    check(meter.rms[0] > 0.01f && meter.rms[1] > 0.01f && meter.peak[0] > 0.01f && meter.peak[1] > 0.01f,
+                    check(meter.channels == channels && meter.rms[0] > 0.01f && meter.peak[0] > 0.01f && (channels == 1 || (meter.rms[1] > 0.01f && meter.peak[1] > 0.01f)),
                         "RX meter measures decoded network output");
                     meterChecked = true;
                 }
@@ -189,31 +191,39 @@ static void networkTests() {
     for (int i = 0; i < 10; ++i) { tx->processBlock(input, midi); juce::Thread::sleep(5); rx->processBlock(output, midi); }
     check(rx->engine().received == 0 && output.getMagnitude(0, 256) == 0, "Source IP filter");
 }
+#include "MultichannelTests.h"
+
 static void editorSnapshots(const juce::File& folder) {
     folder.createDirectory();
-    auto tx = std::make_unique<VbanProcessor>(vband::Mode::send);
-    auto rx = std::make_unique<VbanProcessor>(vband::Mode::receive);
-    tx->prepareToPlay(48000, 256); rx->prepareToPlay(48000, 256);
-    auto rs = rx->settings(); rs.enabled = true; rs.port = freePort(); rs.name = "MeterPreview";
-    auto ts = tx->settings(); ts.enabled = true; ts.port = rs.port; ts.name = rs.name;
-    rx->apply(rs); tx->apply(ts);
-    check(until([&] { return rx->engine().status() == "Waiting for stream" && tx->engine().status() == "Ready to send"; }), "Preview UDP setup");
-    juce::AudioBuffer<float> input(2, 256), output(2, 256); juce::MidiBuffer midi;
-    for (auto* p : {tx.get(), rx.get()}) {
-    // Refresh live audio before each snapshot; rendering the previous editor can take over 150 ms.
-    for (int block = 0; block < 50; ++block) {
-        for (int i = 0; i < 256; ++i) {
-            input.setSample(0, i, 0.40f * std::sin(float(block * 256 + i) * 0.08f));
-            input.setSample(1, i, 0.85f * std::sin(float(block * 256 + i) * 0.11f));
+    for (int channels : {1, 2, 8}) {
+        auto tx = std::make_unique<VbanProcessor>(vband::Mode::send);
+        auto rx = std::make_unique<VbanProcessor>(vband::Mode::receive);
+        check(layout(*tx, channels) && layout(*rx, channels), "Preview host layout");
+        tx->prepareToPlay(48000, 256); rx->prepareToPlay(48000, 256);
+        auto rs = rx->settings(); rs.enabled = true; rs.port = freePort(); rs.name = "MeterPreview";
+        auto ts = tx->settings(); ts.enabled = true; ts.port = rs.port; ts.name = rs.name; ts.channels = channels;
+        rx->apply(rs); tx->apply(ts);
+        check(until([&] { return rx->engine().status() == "Waiting for stream" && tx->engine().status() == "Ready to send"; }), "Preview UDP setup");
+        juce::AudioBuffer<float> input(channels, 256), output(channels, 256); juce::MidiBuffer midi;
+        for (auto* p : {tx.get(), rx.get()}) {
+            // Refresh audio before each snapshot because editor creation can take over 150 ms.
+            for (int block = 0; block < 50; ++block) {
+                for (int c = 0; c < channels; ++c) for (int i = 0; i < 256; ++i)
+                    input.setSample(c, i, (0.25f + 0.075f * c) * std::sin(float(block * 256 + i) * (0.08f + 0.01f * c)));
+                tx->processBlock(input, midi); juce::Thread::sleep(5); rx->processBlock(output, midi);
+            }
+            check(rx->engine().received > 0 && output.getMagnitude(0, 256) > 0.1f, "Preview uses received UDP audio");
+            std::unique_ptr<juce::AudioProcessorEditor> editor(p->createEditor());
+            const auto image = editor->createComponentSnapshot(editor->getLocalBounds());
+            const juce::String name = p->isReceiver() ? "RX" : "TX";
+            auto file = folder.getChildFile(name + "-" + juce::String(channels) + "ch.png");
+            {
+                auto stream = file.createOutputStream();
+                if (stream) { stream->setPosition(0); stream->truncate(); }
+                check(stream != nullptr && juce::PNGImageFormat().writeImageToStream(image, *stream), "Active editor snapshot");
+            }
+            if (channels == 2) check(file.copyFileTo(folder.getChildFile(name + ".png")), "Stereo preview alias");
         }
-        tx->processBlock(input, midi); juce::Thread::sleep(5); rx->processBlock(output, midi);
-    }
-    check(rx->engine().received > 0 && output.getMagnitude(0, 256) > 0.1f, "Preview uses received UDP audio");
-        std::unique_ptr<juce::AudioProcessorEditor> editor(p->createEditor());
-        const auto image = editor->createComponentSnapshot(editor->getLocalBounds());
-        auto stream = folder.getChildFile(p->isReceiver() ? "RX.png" : "TX.png").createOutputStream();
-        if (stream) { stream->setPosition(0); stream->truncate(); }
-        check(stream != nullptr && juce::PNGImageFormat().writeImageToStream(image, *stream), "Active editor snapshot");
     }
 }
 
@@ -226,19 +236,52 @@ static void hostTests(const juce::String& path, bool receiver) {
     auto plugin = format.createInstanceFromDescription(*descriptions[0], 48000, 256, error);
     if (!plugin) throw std::runtime_error(error.toStdString());
     check(plugin->getName() == (receiver ? "VBAN Plug RX" : "VBAN Plug TX"), "Separate VST3 product identity");
-    plugin->prepareToPlay(48000, 256);
-    juce::AudioBuffer<float> buffer(2, 256); juce::MidiBuffer midi;
-    for (int c = 0; c < 2; ++c) for (int i = 0; i < 256; ++i) buffer.setSample(c, i, 0.25f);
-    plugin->processBlock(buffer, midi);
-    check(std::abs(buffer.getSample(0, 0) - (receiver ? 0.0f : 0.25f)) < 0.00001f, "Loaded VST3 audio behavior");
+    // Metadata-only scans omit bus counts; query the instantiated VST3 before any layout change.
+    check(plugin->getTotalNumInputChannels() == 8 && plugin->getTotalNumOutputChannels() == 8,
+        "Loaded VST3 exposes eight input and output connections by default");
+    check(plugin->supportsDoublePrecisionProcessing(), "VST3 advertises double precision");
+    juce::MidiBuffer midi;
+    for (int channels = 1; channels <= 8; ++channels) {
+        check(layout(*plugin, channels), "Loaded VST3 accepts host-selected 1-8 input/output connections");
+        check(plugin->getTotalNumInputChannels() == channels && plugin->getTotalNumOutputChannels() == channels,
+            "Loaded VST3 reports the negotiated connection count");
+        plugin->setProcessingPrecision(juce::AudioProcessor::singlePrecision);
+        plugin->prepareToPlay(48000, 256);
+        juce::AudioBuffer<float> buffer(channels, 256), before;
+        for (int c = 0; c < channels; ++c) for (int i = 0; i < 256; ++i) buffer.setSample(c, i, (c + 1) * 0.075f + i * 0.00001f);
+        before.makeCopyOf(buffer);
+        plugin->processBlock(buffer, midi);
+        for (int c = 0; c < channels; ++c)
+            check(receiver ? buffer.getMagnitude(c, 0, 256) == 0
+                : std::memcmp(buffer.getReadPointer(c), before.getReadPointer(c), 256 * sizeof(float)) == 0,
+                "Loaded VST3 processes every float channel correctly");
+        plugin->releaseResources();
+        plugin->setProcessingPrecision(juce::AudioProcessor::doublePrecision);
+        plugin->prepareToPlay(48000, 256);
+        juce::AudioBuffer<double> doubles(channels, 256), original;
+        for (int c = 0; c < channels; ++c) for (int i = 0; i < 256; ++i) doubles.setSample(c, i, 0.1 * (c + 1) + i * 1.0e-12);
+        original.makeCopyOf(doubles);
+        plugin->processBlock(doubles, midi);
+        for (int c = 0; c < channels; ++c)
+            check(receiver ? doubles.getMagnitude(c, 0, 256) == 0
+                : std::memcmp(doubles.getReadPointer(c), original.getReadPointer(c), 256 * sizeof(double)) == 0,
+                "Loaded VST3 processes every double channel correctly");
+        plugin->releaseResources();
+    }
+    if (receiver) {
+        auto buses = plugin->getBusesLayout();
+        buses.inputBuses.set(0, juce::AudioChannelSet::disabled());
+        check(plugin->setBusesLayout(buses) && plugin->getTotalNumInputChannels() == 0
+            && plugin->getTotalNumOutputChannels() == 8, "Loaded RX permits an eight-output layout with no input bus");
+    }
     std::unique_ptr<juce::AudioProcessorEditor> editor(plugin->createEditorAndMakeActive());
     check(editor != nullptr, "Loaded VST3 editor");
-    editor.reset(); plugin->releaseResources();
+    editor.reset();
 }
 int main(int argc, char** argv) {
     juce::ScopedJuceInitialiser_GUI initialise;
     try {
-        protocolTests(); processorTests(); meterTests(); networkTests();
+        protocolTests(); processorTests(); meterTests(); networkTests(); multichannelTests();
         if (argc > 1) editorSnapshots(juce::File(juce::String::fromUTF8(argv[1])));
         if (argc > 3) { hostTests(juce::String::fromUTF8(argv[2]), false); hostTests(juce::String::fromUTF8(argv[3]), true); }
         std::cout << "PASS: " << checks << " checks (PCM, pass-through, state, UDP, filters, formats, metering";

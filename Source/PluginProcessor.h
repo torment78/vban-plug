@@ -35,6 +35,7 @@ public:
     vband::Settings settings() const { return network.settings(); }
     juce::String apply(vband::Settings);
     juce::String status() const;
+    int meterChannels() const noexcept;
     bool isReceiver() const noexcept { return mode == vband::Mode::receive; }
     vband::NetworkEngine& engine() noexcept { return network; }
     vband::MeterState& meterState() noexcept { return levels; }
@@ -45,6 +46,8 @@ private:
     vband::NetworkEngine network;
     vband::ReceiveBuffer receiveBuffer;
     vband::MeterState levels;
+    static constexpr int scratchFrames = 256;
+    juce::AudioBuffer<float> receiveScratch {vband::maxChannels, scratchFrames};
     std::uint32_t audioGeneration = 0;
     std::atomic<int> hostRate {48000};
     int formatBits = 0, formatChannels = 0;

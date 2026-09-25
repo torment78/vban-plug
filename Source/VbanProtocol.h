@@ -3,18 +3,24 @@
 
 #pragma once
 #include <array>
+#include <algorithm>
 #include <cstdint>
 #include <cstddef>
 #include <string>
 
 namespace vband {
 inline constexpr std::size_t headerSize = 28, maxDatagram = 1464;
+inline constexpr int maxChannels = 8;
+inline constexpr int maxFrames(int channels, int bits) noexcept {
+    return channels >= 1 && channels <= maxChannels && (bits == 16 || bits == 24)
+        ? std::min(256, int(maxDatagram - headerSize) / (channels * (bits / 8))) : 0;
+}
 inline constexpr std::array<int, 21> sampleRates {
     6000,12000,24000,48000,96000,192000,384000,
     8000,16000,32000,64000,128000,256000,512000,
     11025,22050,44100,88200,176400,352800,705600 };
 struct AudioPacket {
-    std::array<float, 512> samples {}; // interleaved, up to 256 stereo frames
+    std::array<float, (maxDatagram - headerSize) / 2> samples {}; // maximum PCM16 payload, interleaved
     std::array<char, 16> name {};
     std::uint32_t sequence = 0, generation = 0, timestamp = 0;
     int rate = 48000, frames = 0, channels = 2, bits = 24;

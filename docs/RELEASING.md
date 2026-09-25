@@ -9,7 +9,7 @@ Run `./Build-Release.ps1` from the repository, or `./Build.ps1 -Package`. This u
 
 Inno Setup 6.6 or later is required. It is discovered on PATH or in `Program Files (x86)/Inno Setup 6`. Override its location with `-InnoCompiler`. `-SkipBuild` repackages an already tested Release build; it does not rebuild or rerun audio tests. The version comes from CMakeLists.txt. Intermediate staging directories are kept under ignored `out/staging` so stale files cannot leak into a release.
 
-The Microsoft C++ runtime is linked statically. No redistributable download is needed. Both complete VST3 bundles and third-party notices are included. The public MVP test installer is unsigned. The project uses AGPLv3; LICENSE and NOTICE.md are included in the packages.
+The Microsoft C++ runtime is linked statically. No redistributable download is needed. Both complete VST3 bundles and third-party notices are included. The public test installer is unsigned. The project uses AGPLv3; LICENSE and NOTICE.md are included in the packages.
 
 ## Installation and removal
 

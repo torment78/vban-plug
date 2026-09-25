@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — One stream, up to eight channels
+
+- TX sends 1–8 numbered channels in one VBAN stream, with PCM16 or PCM24.
+- Both VST3s advertise eight host inputs and outputs and accept 1–8 channel layouts.
+- TX has a Stream channels selector and both editors show the host I/O count.
+- Meters follow the stream: one mono bar, stereo L/R, or 3–8 thinner numbered bars.
+- RX detects the format/channel count and meters all received channels, including when the host exposes fewer outputs.
+- Mono mixing, mono-to-stereo duplication, numbered routing, silent padding, and saved mono/stereo state remain supported.
+- Audio tests cover all channel counts, packet boundaries/order, live format changes, host layouts, and float/double pass-through.
+
 ## 0.1.1 — Initial public MVP release
 
 - Separate VBAN Plug TX and RX effects for Windows x64 VST3 hosts.

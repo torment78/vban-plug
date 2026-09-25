@@ -30,6 +30,7 @@ public:
     std::atomic<std::uint32_t> lastReceive {0};
     static std::uint32_t generation(std::uint64_t c) noexcept { return static_cast<std::uint32_t>(c >> 32); }
     static bool enabled(std::uint64_t c) noexcept { return (c & 1) != 0; }
+    static int streamChannels(std::uint64_t c) noexcept { return int((c >> 3) & 7u) + 1; }
     static bool receiving(std::uint64_t c) noexcept { return (c & 2) != 0; }
 private:
     void run() override;

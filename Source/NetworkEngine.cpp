@@ -10,7 +10,7 @@ juce::String validate(const Settings& s) {
     if (s.port < 1 || s.port > 65535) return "UDP port must be between 1 and 65535.";
     if (!validName(s.name.toStdString())) return "Stream name must contain 1 to 16 printable ASCII characters.";
     if (s.bits != 16 && s.bits != 24) return "Choose PCM 16-bit or PCM 24-bit.";
-    if (s.channels != 1 && s.channels != 2) return "Choose mono or stereo.";
+    if (s.channels < 1 || s.channels > maxChannels) return "Choose 1 to 8 stream channels.";
     return {};
 }
 NetworkEngine::NetworkEngine() : juce::Thread("VBAN network") { startThread(); }
@@ -24,7 +24,7 @@ juce::String NetworkEngine::configure(const Settings& s) {
     config.address = juce::IPAddress(s.address).toString();
     const auto gen = generation(controlWord.load()) + 1;
     const auto flags = (s.enabled ? 1u : 0u) | (s.mode == Mode::receive ? 2u : 0u)
-        | (s.bits == 24 ? 4u : 0u) | (s.channels == 2 ? 8u : 0u);
+        | (s.bits == 24 ? 4u : 0u) | (static_cast<unsigned>(s.channels - 1) << 3);
     controlWord.store((std::uint64_t(gen) << 32) | flags, std::memory_order_release);
     message = s.enabled ? "Starting..." : "Disabled";
     notify(); return {};

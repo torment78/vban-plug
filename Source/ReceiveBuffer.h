@@ -5,22 +5,28 @@
 #include "VbanProtocol.h"
 #include <algorithm>
 #include <array>
+#include <memory>
 
 namespace vband {
-// Audio-thread-owned elastic buffer. Nominal sender and host sample rates must match.
+// Audio-thread-owned elastic buffer. All channels share the same read clock.
 class ReceiveBuffer {
 public:
-    void reset() noexcept { read = write = 0; fraction = 0; playing = false; correction = 0; }
+    void reset() noexcept { read = write = 0; fraction = 0; playing = false; correction = 0; channelCount = 0; }
     void append(const AudioPacket& p) noexcept {
-        if (p.discontinuity || write - read + static_cast<unsigned>(p.frames) >= capacity) reset();
+        if (p.channels < 1 || p.channels > maxChannels || p.frames < 1 || p.frames > maxFrames(p.channels, p.bits)) return;
+        if (p.discontinuity || p.channels != channelCount || write - read + static_cast<unsigned>(p.frames) >= capacity) reset();
+        channelCount = p.channels;
         for (int i = 0; i < p.frames; ++i) {
             auto& frame = samples[(write++) % capacity];
-            frame[0] = p.samples[static_cast<std::size_t>(i * p.channels)];
-            frame[1] = p.samples[static_cast<std::size_t>(i * p.channels + p.channels - 1)];
+            frame.fill(0.0f);
+            for (int c = 0; c < p.channels; ++c)
+                frame[static_cast<std::size_t>(c)] = p.samples[static_cast<std::size_t>(i * p.channels + c)];
         }
     }
-    template<class Sample> bool render(Sample* left, Sample* right, int count, int rate) noexcept {
-        const auto target = static_cast<unsigned>(std::clamp(std::max(rate / 50, count * 2), 512, 8192));
+    // The caller clears outputs first, so startup/underrun tails remain silent.
+    // hostBlockSize keeps the latency target independent of the scratch-buffer chunk size.
+    bool render(float* const* outputs, int channels, int count, int rate, int hostBlockSize) noexcept {
+        const auto target = static_cast<unsigned>(std::clamp(std::max(rate / 50, hostBlockSize * 2), 512, 8192));
         if (!playing && write - read >= target + 2) playing = true;
         if (!playing) return false;
         if (write - read > target * 3) { read = write - target; fraction = 0; }
@@ -31,9 +37,8 @@ public:
             const auto& a = samples[read % capacity];
             const auto& b = samples[(read + 1) % capacity];
             const auto f = static_cast<float>(fraction);
-            const float l = a[0] + (b[0] - a[0]) * f, r = a[1] + (b[1] - a[1]) * f;
-            left[i] = right ? l : (l + r) * 0.5f;
-            if (right) right[i] = r;
+            for (int c = 0; c < std::min(channels, maxChannels); ++c)
+                outputs[c][i] = a[static_cast<std::size_t>(c)] + (b[static_cast<std::size_t>(c)] - a[static_cast<std::size_t>(c)]) * f;
             fraction += 1.0 + correction;
             const auto step = static_cast<unsigned>(fraction);
             read += step; fraction -= step;
@@ -42,9 +47,12 @@ public:
     }
 private:
     static constexpr unsigned capacity = 32768;
-    std::array<std::array<float, 2>, capacity> samples {};
+    using Frame = std::array<float, maxChannels>;
+    // Allocate once when the processor is created, never during audio processing.
+    std::unique_ptr<Frame[]> samples {std::make_unique<Frame[]>(capacity)};
     std::uint64_t read = 0, write = 0;
     double fraction = 0, correction = 0;
     bool playing = false;
+    int channelCount = 0;
 };
 }

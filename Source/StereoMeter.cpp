@@ -3,13 +3,22 @@
 
 #include "StereoMeter.h"
 
-StereoMeter::StereoMeter(vband::MeterState& data, bool receiver)
+StereoMeter::StereoMeter(vband::MeterState& data, bool receiver, int channels)
     : source(data), receiving(receiver), lastTick(juce::Time::getMillisecondCounter()) {
-    setPacketCount(0);
-    setTitle(receiver ? "Received audio levels" : "Input audio levels");
-    setTooltip("L/R RMS levels in dBFS, with fast peak capture, 750 ms peak hold and a 1 second clip indicator.");
+    levelDb.fill(-60.0f); peakDb.fill(-60.0f);
+    setChannelCount(channels); setPacketCount(0);
+    setTitle(receiver ? "Received audio levels" : "Transmitted stream levels");
+    setTooltip("Per-channel stream RMS levels in dBFS, with fast peak capture, 750 ms peak hold and a 1 second clip indicator.");
     timerCallback();
     startTimerHz(60);
+}
+void StereoMeter::setChannelCount(int channels) {
+    channels = std::clamp(channels, 1, vband::maxChannels);
+    if (channels == channelCount) return;
+    channelCount = channels;
+    levelDb.fill(-60.0f); peakDb.fill(-60.0f);
+    holdSeconds.fill(0.0f); clipSeconds.fill(0.0f);
+    repaint();
 }
 void StereoMeter::setPacketCount(std::uint64_t count) {
     const auto text = juce::String(receiving ? "Packets received: " : "Packets sent: ")
@@ -22,9 +31,9 @@ void StereoMeter::timerCallback() {
     lastTick = now;
     const auto current = source.read();
     const bool fresh = current.timestamp != 0 && now - current.timestamp <= 150;
-    for (std::size_t c = 0; c < 2; ++c) {
-        const float target = juce::Decibels::gainToDecibels(fresh ? current.rms[c] : 0.0f, -60.0f);
-        const float instantPeak = juce::Decibels::gainToDecibels(fresh ? current.peak[c] : 0.0f, -60.0f);
+    for (std::size_t c = 0; c < static_cast<std::size_t>(channelCount); ++c) {
+        const float target = juce::Decibels::gainToDecibels(fresh && int(c) < current.channels ? current.rms[c] : 0.0f, -60.0f);
+        const float instantPeak = juce::Decibels::gainToDecibels(fresh && int(c) < current.channels ? current.peak[c] : 0.0f, -60.0f);
         levelDb[c] = std::max(target, levelDb[c] - elapsed * 24.0f);
         holdSeconds[c] = std::max(0.0f, holdSeconds[c] - elapsed);
         clipSeconds[c] = std::max(0.0f, clipSeconds[c] - elapsed);
@@ -33,7 +42,7 @@ void StereoMeter::timerCallback() {
         } else if (holdSeconds[c] == 0.0f) {
             peakDb[c] = std::max(levelDb[c], peakDb[c] - elapsed * 20.0f);
         }
-        if (fresh && current.peak[c] >= 1.0f) clipSeconds[c] = 1.0f;
+        if (fresh && int(c) < current.channels && current.peak[c] >= 1.0f) clipSeconds[c] = 1.0f;
     }
     repaint();
 }
@@ -43,14 +52,18 @@ void StereoMeter::paint(juce::Graphics& g) {
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 6.0f);
     g.setFont(juce::FontOptions(12.0f));
     g.setColour(juce::Colour(0xffa6bdc9));
-    g.drawText(receiving ? "OUTPUT LEVEL  /  dBFS" : "INPUT LEVEL  /  dBFS", 12, 3, 180, 20, juce::Justification::centredLeft);
+    g.drawText(receiving ? "RECEIVED LEVEL  /  dBFS" : "STREAM LEVEL  /  dBFS", 12, 3, 180, 20, juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xffdcebf1));
     g.drawText(packetText, 198, 3, getWidth()-210, 20, juce::Justification::centredRight);
-    const float barX = 32.0f, barWidth = width - 118.0f, barHeight = 13.0f;
-    for (std::size_t c = 0; c < 2; ++c) {
-        const float y = 30.0f + float(c) * 23.0f;
+    const float barX = 32.0f, barWidth = width - 118.0f, barHeight = channelCount <= 2 ? 13.0f : 6.0f;
+    const float rowHeight = channelCount <= 2 ? 23.0f : 11.0f;
+    g.setFont(juce::FontOptions(channelCount <= 2 ? 12.0f : 10.0f));
+    for (std::size_t c = 0; c < static_cast<std::size_t>(channelCount); ++c) {
+        const float y = 30.0f + float(c) * rowHeight + (channelCount == 1 ? 8.0f : 0.0f);
         g.setColour(juce::Colour(0xffdcebf1));
-        g.drawText(c == 0 ? "L" : "R", 12, int(y)-2, 16, 18, juce::Justification::centredLeft);
+        const auto label = channelCount == 2 ? juce::String(c == 0 ? "L" : "R") : (channelCount == 1 ? juce::String("M") : juce::String(int(c) + 1));
+        const int textHeight = channelCount <= 2 ? 18 : 12;
+        g.drawText(label, 12, int(y)-2, 16, textHeight, juce::Justification::centredLeft);
         g.setColour(juce::Colour(0xff0b141b));
         g.fillRoundedRectangle(barX, y, barWidth, barHeight, 2.0f);
         const float level = barWidth * position(levelDb[c]);
@@ -70,15 +83,16 @@ void StereoMeter::paint(juce::Graphics& g) {
             g.fillRect(barX + std::min(barWidth - 2.0f, barWidth * position(peakDb[c])), y, 2.0f, barHeight);
         }
         g.setColour(clipSeconds[c] > 0.0f ? juce::Colour(0xffff6d69) : juce::Colour(0xff35434d));
-        g.fillEllipse(width - 18.0f, y + 3.0f, 7.0f, 7.0f);
+        const float dot = channelCount <= 2 ? 7.0f : 5.0f;
+        g.fillEllipse(width - 18.0f, y + (barHeight - dot) * 0.5f, dot, dot);
         g.setColour(juce::Colour(0xffdcebf1));
         const auto value = levelDb[c] <= -59.9f ? juce::String("-inf") : juce::String(levelDb[c], 1);
-        g.drawText(value, int(width)-79, int(y)-2, 53, 18, juce::Justification::centredRight);
+        g.drawText(value, int(width)-79, int(y)-2, 53, textHeight, juce::Justification::centredRight);
     }
     g.setFont(juce::FontOptions(10.0f));
     g.setColour(juce::Colour(0xff8fa6b3));
     for (int db : {-60, -48, -36, -24, -12, -6, 0}) {
         const int x = int(barX + barWidth * position(float(db)));
-        g.drawText(juce::String(db), x-12, 71, 24, 15, juce::Justification::centred);
+        g.drawText(juce::String(db), x-12, getHeight()-19, 24, 15, juce::Justification::centred);
     }
 }

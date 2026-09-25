@@ -35,7 +35,7 @@ std::array<char, 16> streamName(const std::string& name) noexcept {
 }
 std::size_t encode(const AudioPacket& p, std::array<std::uint8_t, maxDatagram>& out) noexcept {
     const auto index = rateIndex(p.rate);
-    if (index < 0 || p.frames < 1 || p.frames > 256 || p.channels < 1 || p.channels > 2
+    if (index < 0 || p.frames < 1 || p.frames > 256 || p.channels < 1 || p.channels > maxChannels
         || (p.bits != 16 && p.bits != 24)) return 0;
     const int width = p.bits / 8;
     const auto size = headerSize + static_cast<std::size_t>(p.frames * p.channels * width);
@@ -60,7 +60,7 @@ std::size_t encode(const AudioPacket& p, std::array<std::uint8_t, maxDatagram>& 
 }
 bool decode(const std::uint8_t* data, std::size_t size, AudioPacket& out) noexcept {
     if (size < headerSize || size > maxDatagram || std::memcmp(data, "VBAN", 4) != 0
-        || data[4] >= sampleRates.size() || (data[7] != 1 && data[7] != 2) || data[6] > 1) return false;
+        || data[4] >= sampleRates.size() || (data[7] != 1 && data[7] != 2) || data[6] >= maxChannels) return false;
     const int frames = data[5] + 1, channels = data[6] + 1, width = data[7] + 1;
     if (size != headerSize + static_cast<std::size_t>(frames * channels * width)) return false;
     out.rate = sampleRates[data[4]]; out.frames = frames; out.channels = channels; out.bits = width * 8;
