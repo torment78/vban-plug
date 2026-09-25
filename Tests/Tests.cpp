@@ -195,7 +195,21 @@ static void networkTests() {
 
 static void editorSnapshots(const juce::File& folder) {
     folder.createDirectory();
-    for (int channels : {1, 2, 8}) {
+    {
+        auto rx = std::make_unique<VbanProcessor>(vband::Mode::receive);
+        auto settings = rx->settings(); settings.enabled = true; settings.port = freePort();
+        check(rx->apply(settings).isEmpty(), "Configure waiting RX preview");
+        check(until([&] { return rx->engine().status() == "Waiting for stream"; }), "Waiting RX bound");
+        check(rx->getTotalNumOutputChannels() == 8 && rx->meterChannels() == 0,
+            "Eight host outputs do not create received-channel meters");
+        std::unique_ptr<juce::AudioProcessorEditor> editor(rx->createEditor());
+        const auto image = editor->createComponentSnapshot(editor->getLocalBounds());
+        auto stream = folder.getChildFile("RX-waiting.png").createOutputStream();
+        if (stream) { stream->setPosition(0); stream->truncate(); }
+        check(stream != nullptr && juce::PNGImageFormat().writeImageToStream(image, *stream), "Waiting RX editor snapshot");
+    }
+
+    for (int channels : {1, 2, 3, 8}) {
         auto tx = std::make_unique<VbanProcessor>(vband::Mode::send);
         auto rx = std::make_unique<VbanProcessor>(vband::Mode::receive);
         check(layout(*tx, channels) && layout(*rx, channels), "Preview host layout");

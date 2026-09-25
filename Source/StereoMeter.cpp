@@ -13,7 +13,7 @@ StereoMeter::StereoMeter(vband::MeterState& data, bool receiver, int channels)
     startTimerHz(60);
 }
 void StereoMeter::setChannelCount(int channels) {
-    channels = std::clamp(channels, 1, vband::maxChannels);
+    channels = std::clamp(channels, receiving ? 0 : 1, vband::maxChannels);
     if (channels == channelCount) return;
     channelCount = channels;
     levelDb.fill(-60.0f); peakDb.fill(-60.0f);
@@ -55,6 +55,12 @@ void StereoMeter::paint(juce::Graphics& g) {
     g.drawText(receiving ? "RECEIVED LEVEL  /  dBFS" : "STREAM LEVEL  /  dBFS", 12, 3, 180, 20, juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xffdcebf1));
     g.drawText(packetText, 198, 3, getWidth()-210, 20, juce::Justification::centredRight);
+    if (channelCount == 0) {
+        g.setColour(juce::Colour(0xffa6bdc9));
+        g.drawText("Waiting for stream - channels detected automatically", 12, 28,
+            getWidth() - 24, 24, juce::Justification::centredLeft);
+        return;
+    }
     const float barX = 32.0f, barWidth = width - 118.0f, barHeight = channelCount <= 2 ? 13.0f : 6.0f;
     const float rowHeight = channelCount <= 2 ? 23.0f : 11.0f;
     g.setFont(juce::FontOptions(channelCount <= 2 ? 12.0f : 10.0f));

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — RX meters follow the detected stream
+
+- RX shows no channel bars until it detects a matching stream, instead of initially showing the host's channel count.
+- Once detected, RX shows exactly one meter per stream channel selected in TX, including when the host keeps eight connections available.
+- Disabling RX hides its channel bars; live channel-count changes continue to update automatically.
+- Added waiting-state and three/four-channel stream checks with eight-channel host buses.
+
 ## 0.2.0 — One stream, up to eight channels
 
 - TX sends 1–8 numbered channels in one VBAN stream, with PCM16 or PCM24.

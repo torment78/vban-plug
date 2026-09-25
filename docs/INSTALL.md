@@ -1,13 +1,13 @@
 # Install VBAN Plug TX and RX
 
 Download the installer or portable ZIP from
-[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.2.0).
-Version 0.2.0 is an unsigned Windows x64 multichannel test release.
+[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.2.1).
+Version 0.2.1 is an unsigned Windows x64 multichannel test release.
 
 ## Installer
 
 1. Close your audio host.
-2. Run `VBAN-Plug-0.2.0-Windows-x64-Setup.exe`.
+2. Run `VBAN-Plug-0.2.1-Windows-x64-Setup.exe`.
 3. Approve Windows' administrator prompt for installation to the standard folder.
 4. Review the destination and click Install.
 5. Open your host and rescan VST3 plug-ins.
@@ -50,7 +50,10 @@ firewall rules or install Voicemeeter. No additional Microsoft C++ runtime is ne
 Both plug-ins advertise eight inputs and eight outputs. Configure the track/bus
 or plug-in routing pins in your host for eight channels (often called 7.1), then
 connect each TX input and RX output. Select **8 channels** in TX and click
-**Apply settings**. RX detects the incoming count and displays eight thin meters.
+**Apply settings**. RX detects the incoming count and displays eight thin meters. Choose any other
+count in TX and click **Apply settings**; both editors then show that number of
+meters. RX shows **Waiting for stream** without channel bars until a matching
+stream arrives, regardless of how many host output connections are available.
 
 The **Host I/O** row reports the layout selected by the host. The TX stream
 drop-down does not change host routing. If the host is still stereo, TX sends

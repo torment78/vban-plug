@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(VBANPlug VERSION 0.2.0 LANGUAGES C CXX)
+project(VBANPlug VERSION 0.2.1 LANGUAGES C CXX)
 # Keep the Windows release self-contained (no separate VC++ runtime installer).
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_STANDARD 17)

@@ -25,8 +25,10 @@ bool VbanProcessor::isBusesLayoutSupported(const BusesLayout& b) const {
 }
 int VbanProcessor::meterChannels() const noexcept {
     if (!isReceiver()) return vband::NetworkEngine::streamChannels(network.control());
+    if (!vband::NetworkEngine::enabled(network.control())) return 0;
+    // Only a matching VBAN packet determines RX's displayed channel count.
     const int incoming = network.incomingChannels.load(std::memory_order_relaxed);
-    return std::clamp(incoming > 0 ? incoming : getTotalNumOutputChannels(), 1, vband::maxChannels);
+    return std::clamp(incoming, 0, vband::maxChannels);
 }
 juce::String VbanProcessor::apply(vband::Settings s) {
     s.mode = mode;

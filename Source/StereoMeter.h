@@ -12,7 +12,7 @@ public:
     void paint(juce::Graphics&) override;
     void setPacketCount(std::uint64_t);
     void setChannelCount(int);
-    int preferredHeight() const noexcept { return channelCount <= 2 ? 90 : 48 + channelCount * 11; }
+    int preferredHeight() const noexcept { return channelCount == 0 ? 64 : (channelCount <= 2 ? 90 : 48 + channelCount * 11); }
 private:
     void timerCallback() override;
     static float position(float db) noexcept { return juce::jlimit(0.0f, 1.0f, (db + 60.0f) / 60.0f); }

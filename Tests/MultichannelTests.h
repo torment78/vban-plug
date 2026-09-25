@@ -16,6 +16,8 @@ static void channelLayoutTests() {
             "Eight host input and output pins are exposed by default");
         for (int channels = 1; channels <= 8; ++channels) {
             check(layout(*processor, channels), "Host can choose every 1-8 channel layout");
+            if (mode == vband::Mode::receive)
+                check(processor->meterChannels() == 0, "RX never invents meters from the host layout before detection");
             auto discrete = processor->getBusesLayout();
             discrete.inputBuses.set(0, juce::AudioChannelSet::discreteChannels(channels));
             discrete.outputBuses.set(0, juce::AudioChannelSet::discreteChannels(channels));
@@ -95,6 +97,7 @@ static void channelNetworkTests() {
     auto ts = tx->settings(); ts.enabled = true; ts.port = rs.port; ts.name = rs.name;
     check(rx->apply(rs).isEmpty(), "Configure multichannel RX");
     check(until([&] { return rx->engine().status() == "Waiting for stream"; }), "Multichannel RX ready");
+    check(rx->meterChannels() == 0, "Enabled RX waits for a matching stream before showing channel meters");
     juce::MidiBuffer midi;
     auto run = [&](int inputs, int streamChannels, int outputs, int bits, int blockSize = 256) {
         check(layout(*tx, inputs) && layout(*rx, outputs), "Select host buses for channel routing case");
@@ -138,6 +141,7 @@ static void channelNetworkTests() {
         }
     };
     for (int bits : {16, 24}) for (int channels = 1; channels <= 8; ++channels) run(channels, channels, channels, bits);
+    run(8, 3, 8, 24); run(8, 4, 8, 24); // Meter count follows TX while both host buses stay at eight.
     run(8, 8, 2, 24);
     check(rx->status().contains("Host: 2 out"), "RX warns when the host exposes fewer outputs than the stream");
     run(8, 8, 1, 16); run(2, 2, 8, 24);
@@ -145,6 +149,8 @@ static void channelNetworkTests() {
     run(2, 8, 8, 24); run(8, 1, 1, 24);
     run(1, 2, 2, 16);
     run(8, 8, 8, 24, 1025); // Cross scratch-buffer chunks and the final short chunk.
+    rs.enabled = false; check(rx->apply(rs).isEmpty(), "Disable detected RX stream");
+    check(rx->meterChannels() == 0, "Disabled RX hides the previously detected channel meters");
 }
 static void monoCancellationMeterTest() {
     auto tx = std::make_unique<VbanProcessor>(vband::Mode::send);

@@ -8,7 +8,7 @@
 **RX** receives one matching stream and plays it in your audio host. Separate plug-ins,
 simple network settings, one horizontal meter per stream channel, and live packet counters.
 
-[**Download v0.2.0**](https://github.com/torment78/vban-plug/releases/tag/v0.2.0)
+[**Download v0.2.1**](https://github.com/torment78/vban-plug/releases/tag/v0.2.1)
  · [Installation guide](docs/INSTALL.md)
  · [Report an issue](https://github.com/torment78/vban-plug/issues)
 
@@ -21,15 +21,15 @@ VBAN Plug is made by **ElkaSoft**. The **VBAN protocol** and **Voicemeeter** are
 
 ## Download and install
 
-Version **0.2.0** is the multichannel test release for **Windows 10/11 x64**.
+Version **0.2.1** is the multichannel test release for **Windows 10/11 x64**.
 Use a 64-bit host that supports VST3.
 
 | Download | Contents |
 | --- | --- |
-| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.2.0/VBAN-Plug-0.2.0-Windows-x64-Setup.exe) | Dark ElkaSoft installer for both TX and RX, with an optional Donate button. |
-| [Portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.2.0/VBAN-Plug-0.2.0-Windows-x64-Portable.zip) | Both complete VST3 bundles, instructions, licences, and artwork in one VBAN Plug folder. |
-| [Source ZIP with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.2.0/VBAN-Plug-0.2.0-Source.zip) | Project source, build scripts, artwork, and the exact JUCE sources used for the binaries. |
-| [SHA256 checksums](https://github.com/torment78/vban-plug/releases/download/v0.2.0/SHA256.txt) | Checksums for the installer and both ZIPs. |
+| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Windows-x64-Setup.exe) | Dark ElkaSoft installer for both TX and RX, with an optional Donate button. |
+| [Portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Windows-x64-Portable.zip) | Both complete VST3 bundles, instructions, licences, and artwork in one VBAN Plug folder. |
+| [Source ZIP with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Source.zip) | Project source, build scripts, artwork, and the exact JUCE sources used for the binaries. |
+| [SHA256 checksums](https://github.com/torment78/vban-plug/releases/download/v0.2.1/SHA256.txt) | Checksums for the installer and both ZIPs. |
 
 Close your audio host, run the installer, and then rescan VST3 plug-ins in the host.
 Both plug-ins go to:
@@ -53,15 +53,20 @@ See the [installation guide](docs/INSTALL.md) for updates and removal.
 | ![VBAN Plug TX editor](docs/images/editor-tx.png) | ![VBAN Plug RX editor](docs/images/editor-rx.png) |
 
 
-The editors below show eight-channel operation. Mono uses one bar; stereo uses L/R.
+The main previews show eight-channel operation. Mono uses one bar; stereo uses L/R. RX waits to detect the stream before showing any channel bars.
 
 <details>
-<summary>Mono and stereo editor previews</summary>
+<summary>Channel-count editor previews</summary>
 
 | Transmit | Receive |
 | --- | --- |
 | ![TX mono](docs/images/editor-tx-mono.png) | ![RX mono](docs/images/editor-rx-mono.png) |
 | ![TX stereo](docs/images/editor-tx-stereo.png) | ![RX stereo](docs/images/editor-rx-stereo.png) |
+| ![TX three channels](docs/images/editor-tx-three.png) | ![RX three detected channels](docs/images/editor-rx-three.png) |
+
+RX before a matching stream arrives, with eight host connections available:
+
+![RX waiting for channel detection](docs/images/editor-rx-waiting.png)
 
 </details>
 
@@ -87,7 +92,7 @@ The network copy is quantized/clipped to the selected PCM format; host audio is 
 | Local UDP port | The port this plug-in listens on. |
 | Stream name | Must match the sender exactly. |
 
-PCM 16/24-bit and 1–8 stream channels are detected automatically. RX shows one meter for every received channel, even when the host has fewer output connections.
+PCM 16/24-bit and 1–8 stream channels are detected automatically. RX shows one meter for every received channel, even when the host has fewer output connections. Before the first matching packet arrives, it shows **Waiting for stream** with no channel bars. For example, choose **3 channels** in TX and click **Apply settings**: TX sends three channels in one stream and RX automatically shows three meters. The host's eight available connections do not add extra meters.
 
 RX and the sending system must use the **same nominal sample rate**, for example 48000 Hz. The editor reports a mismatch and outputs silence until corrected. A small adaptive receive buffer follows clock drift using fractional interpolation; this version does not convert between different nominal sample rates. Typical buffering is about 20 ms or two host blocks, whichever is larger, plus network scheduling. RX is a live source and does not request host delay compensation.
 

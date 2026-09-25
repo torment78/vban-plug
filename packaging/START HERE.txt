@@ -26,6 +26,8 @@ QUICK LOCAL TEST
 
 TX preserves host audio; one network stream can use PCM16/24 and 1-8 channels.
 RX receives one matching IP and stream; it detects PCM format and channels.
+Pick the channel count in TX and click Apply settings. RX then shows exactly
+that many meters. Before receiving a stream, RX shows no channel bars.
 For another PC use its real network IP and allow your host through the
 Windows firewall for the chosen UDP port. Setup changes no firewall rules.
 No separate Microsoft Visual C++ runtime download is needed.
