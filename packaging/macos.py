@@ -51,7 +51,7 @@ def bundles(build):
             yield build / ("VBANPlug" + direction + "_artefacts/Release") / fmt / ("VBAN Plug " + direction + "." + ext)
 
 def verify(bundle):
-    run("lipo", "-verify_arch", "arm64", "x86_64", executable(bundle))
+    run("lipo", executable(bundle), "-verify_arch", "arm64", "x86_64")
     run("codesign", "--verify", "--strict", bundle)
     signature = run("codesign", "--display", "--verbose=2", bundle, capture_output=True, text=True).stderr
     if "Signature=adhoc" not in signature:

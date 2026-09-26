@@ -61,7 +61,7 @@ def main():
     kit.mkdir()
     run("tar", "-xzf", release / "macos-test-kit.tar.gz", "-C", kit)
     tester = kit / "VBANPlugTests"
-    run("lipo", "-verify_arch", "arm64", "x86_64", tester)
+    run("lipo", tester, "-verify_arch", "arm64", "x86_64")
     with open(logs / "audio-vst3.txt", "w") as stream:
         run(tester, logs / "editor-previews",
             "/Library/Audio/Plug-Ins/VST3/VBAN Plug TX.vst3",

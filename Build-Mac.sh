@@ -10,5 +10,5 @@ fi
 cmake --preset macos-universal
 cmake --build --preset macos-release --parallel "${VBAN_BUILD_JOBS:-2}"
 python3 packaging/macos.py sign build/macos-universal
-ctest --preset macos-release
+ctest --preset macos-release --timeout 180
 python3 packaging/macos.py package build/macos-universal
