@@ -6,21 +6,21 @@ body:
     id: version
     attributes:
       label: VBAN Plug version
-      placeholder: "0.1.1"
+      placeholder: "0.3.0 dev"
     validations:
       required: true
   - type: input
     id: host
     attributes:
-      label: Windows and audio host versions
-      placeholder: "Windows 11, host name and version, x64"
+      label: Operating system and audio host versions
+      placeholder: "Windows 11 x64 or macOS version + Apple Silicon/Intel, host name and version"
     validations:
       required: true
   - type: textarea
     id: audio
     attributes:
       label: Audio and network setup
-      description: Include sample rate, host block size, TX/RX, PCM format, mono/stereo, and whether this is one PC or two. Exact IP addresses are not needed.
+      description: Include sample rate, host block size, TX/RX, PCM format, 1-8 stream channels, host channel layout, and whether this is one computer or two. Exact IP addresses are not needed.
     validations:
       required: true
   - type: textarea

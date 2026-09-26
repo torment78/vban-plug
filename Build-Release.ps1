@@ -31,7 +31,7 @@ foreach ($taskDocument in @('README.md','LICENSE','NOTICE.md','CHANGELOG.md')) {
 if (Test-Path -LiteralPath (Join-Path $taskRoot 'docs\images')) {
     New-Item -ItemType Directory -Path (Join-Path $taskPayload 'docs') | Out-Null
     Copy-Item -LiteralPath (Join-Path $taskRoot 'docs\images') -Destination (Join-Path $taskPayload 'docs') -Recurse
-    foreach ($taskDoc in @('RELEASING.md','INSTALL.md')) { Copy-Item -LiteralPath (Join-Path $taskRoot ('docs\'+ $taskDoc)) -Destination (Join-Path $taskPayload 'docs') }
+    foreach ($taskDoc in @('RELEASING.md','INSTALL.md','INSTALL-MAC.md')) { Copy-Item -LiteralPath (Join-Path $taskRoot ('docs\'+ $taskDoc)) -Destination (Join-Path $taskPayload 'docs') }
 }
 $taskGuide = [IO.File]::ReadAllText((Join-Path $taskRoot 'packaging\START HERE.txt')).Replace('@VERSION@',$taskVersion)
 [IO.File]::WriteAllText((Join-Path $taskPayload 'START HERE.txt'),$taskGuide)

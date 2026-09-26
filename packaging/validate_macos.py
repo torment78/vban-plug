@@ -18,7 +18,11 @@ def main():
     args = parser.parse_args()
     if platform.system() != "Darwin" or os.environ.get("GITHUB_ACTIONS") != "true":
         raise SystemExit("Installation validation is restricted to disposable GitHub Actions Mac runners.")
-    release = args.release_directory.resolve()
+    # Artifact uploads can retain the version/macOS directory hierarchy.
+    manifests = list(args.release_directory.resolve().rglob("SHA256-macOS.txt"))
+    if len(manifests) != 1:
+        raise RuntimeError("Expected exactly one Mac release manifest")
+    release = manifests[0].parent
     logs = ROOT / "out/mac-validation"
     logs.mkdir(parents=True, exist_ok=True)
     work = pathlib.Path(tempfile.mkdtemp(prefix="verify-", dir=logs))

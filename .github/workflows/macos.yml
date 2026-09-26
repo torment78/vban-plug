@@ -1,12 +1,20 @@
 name: macOS universal build
 on:
   workflow_dispatch:
+    inputs:
+      candidate_run_id:
+        description: 'Optional prior run ID: validate its existing candidate without rebuilding'
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build:
     name: Build universal Mac packages
+    if: ${{ inputs.candidate_run_id == '' }}
     runs-on: macos-15
     timeout-minutes: 45
     steps:
@@ -41,6 +49,7 @@ jobs:
   validate:
     name: Validate on ${{ matrix.runner }}
     needs: build
+    if: ${{ always() && (needs.build.result == 'success' || inputs.candidate_run_id != '') }}
     strategy:
       fail-fast: false
       matrix:
@@ -55,6 +64,8 @@ jobs:
         with:
           name: macos-candidate
           path: out/macos-candidate
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.candidate_run_id || github.run_id }}
       - name: Test package installation, audio, and both plug-in formats
         run: python3 packaging/validate_macos.py out/macos-candidate
       - name: Upload validation logs
