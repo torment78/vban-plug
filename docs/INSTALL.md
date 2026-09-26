@@ -1,13 +1,13 @@
 # Install VBAN Plug TX and RX
 
 Download the installer or portable ZIP from
-[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.2.1).
-Version 0.2.1 is an unsigned Windows x64 multichannel test release.
+[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.3.0-dev).
+Version 0.3.0 is an unsigned Windows x64 multichannel test release.
 
 ## Installer
 
 1. Close your audio host.
-2. Run `VBAN-Plug-0.2.1-Windows-x64-Setup.exe`.
+2. Run `VBAN-Plug-0.3.0-Windows-x64-Setup.exe`.
 3. Approve Windows' administrator prompt for installation to the standard folder.
 4. Review the destination and click Install.
 5. Open your host and rescan VST3 plug-ins.

@@ -1,0 +1,69 @@
+name: macOS universal build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build universal Mac packages
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install build tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/vban-tools"
+          "$RUNNER_TEMP/vban-tools/bin/pip" install cmake==4.2.3 ninja==1.13.0
+          echo "$RUNNER_TEMP/vban-tools/bin" >> "$GITHUB_PATH"
+      - name: Build, test, and package
+        run: bash Build-Mac.sh
+      - name: Upload packages for validation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: macos-candidate
+          path: out/releases/*/macos/*
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: macos-build-diagnostics
+          path: |
+            build/macos-universal/Testing/Temporary/*
+            build/macos-universal/editor-previews/*
+            build/macos-universal/CMakeFiles/CMakeConfigureLog.yaml
+          retention-days: 14
+
+  validate:
+    name: Validate on ${{ matrix.runner }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: macos-candidate
+          path: out/macos-candidate
+      - name: Test package installation, audio, and both plug-in formats
+        run: python3 packaging/validate_macos.py out/macos-candidate
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: validation-${{ matrix.runner }}
+          path: |
+            out/mac-validation/*.txt
+            out/mac-validation/editor-previews/*
+          if-no-files-found: warn
+          retention-days: 14

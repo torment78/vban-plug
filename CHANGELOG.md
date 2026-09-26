@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0-dev — Windows and Mac dev build
+
+- Added universal Apple Silicon/Intel Mac VST3 and Audio Unit builds for TX and RX.
+- Separate Windows and Mac installers, portable ZIPs, source archives, and checksums.
+- Mac builds use local ad-hoc signatures without Developer ID signing or notarization.
+- Added a manually triggered Mac build workflow with native Apple Silicon and Intel validation.
+- Stream routing, 1–8 channel selection, and automatic RX metering are unchanged.
+
 ## 0.2.1 — RX meters follow the detected stream
 
 - RX shows no channel bars until it detects a matching stream, instead of initially showing the host's channel count.

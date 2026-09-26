@@ -2,13 +2,13 @@
 
 ![VBAN Plug TX + RX by ElkaSoft](docs/images/social-preview-tagged.jpg)
 
-**Two lightweight Windows VST3 plug-ins for sending and receiving VBAN audio.**
+**Two lightweight plug-ins for sending and receiving VBAN audio on Windows and macOS.**
 
 **TX** sends one stream with 1–8 channels while host audio passes through unchanged.
 **RX** receives one matching stream and plays it in your audio host. Separate plug-ins,
 simple network settings, one horizontal meter per stream channel, and live packet counters.
 
-[**Download v0.2.1**](https://github.com/torment78/vban-plug/releases/tag/v0.2.1)
+[**Dev build: Windows + Mac**](https://github.com/torment78/vban-plug/releases/tag/v0.3.0-dev)
  · [Installation guide](docs/INSTALL.md)
  · [Report an issue](https://github.com/torment78/vban-plug/issues)
 
@@ -19,32 +19,41 @@ Free and open source under [AGPL-3.0](LICENSE). Donations support development an
 VBAN Plug is made by **ElkaSoft**. The **VBAN protocol** and **Voicemeeter** are by
 [VB-Audio](https://vb-audio.com/Voicemeeter/vban.htm).
 
-## Download and install
+## Download the dev build
 
-Version **0.2.1** is the multichannel test release for **Windows 10/11 x64**.
-Use a 64-bit host that supports VST3.
+**0.3.0 dev build** provides separate Windows and Mac downloads. Choose your platform.
+
+### Windows 10/11 x64
 
 | Download | Contents |
 | --- | --- |
-| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Windows-x64-Setup.exe) | Dark ElkaSoft installer for both TX and RX, with an optional Donate button. |
-| [Portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Windows-x64-Portable.zip) | Both complete VST3 bundles, instructions, licences, and artwork in one VBAN Plug folder. |
-| [Source ZIP with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.2.1/VBAN-Plug-0.2.1-Source.zip) | Project source, build scripts, artwork, and the exact JUCE sources used for the binaries. |
-| [SHA256 checksums](https://github.com/torment78/vban-plug/releases/download/v0.2.1/SHA256.txt) | Checksums for the installer and both ZIPs. |
+| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Windows-x64-Setup.exe) | TX and RX VST3, with the dark ElkaSoft installer. |
+| [Windows portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Windows-x64-Portable.zip) | Complete TX/RX bundles for manual installation. |
+| [Windows source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Source.zip) | Source and dependencies used by the Windows build. |
+| [Windows checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/SHA256-Windows.txt) | Installer and ZIP checksums. |
 
-Close your audio host, run the installer, and then rescan VST3 plug-ins in the host.
-Both plug-ins go to:
+[Windows installation guide](docs/INSTALL.md). Close the host before installing,
+then rescan. Both bundles install to `C:\Program Files\Common Files\VST3`.
+For a manual installation, copy the complete .vst3 folders, including Contents
+and Resources. No separate Microsoft Visual C++ runtime is needed.
 
-```text
-C:\Program Files\Common Files\VST3
-```
+### Mac — Apple Silicon and Intel
 
-For manual installation, extract the portable ZIP and copy the **entire**
-`VBAN Plug TX.vst3` and `VBAN Plug RX.vst3` folders there. Keep their
-`Contents`, `Resources`, `moduleinfo.json`, and `x86_64-win` files together.
-Use one installation method and keep one copy of each plug-in.
+| Download | Contents |
+| --- | --- |
+| [Mac installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Universal.pkg) | TX/RX VST3 and Audio Units in the standard Mac plug-in folders. |
+| [Mac portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Universal.zip) | Universal TX/RX bundles for manual installation. |
+| [Mac source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Source.zip) | Source and dependencies used by the Mac build. |
+| [Mac checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/SHA256-macOS.txt) | Installer and ZIP checksums. |
 
-The builds are unsigned. No separate Microsoft Visual C++ runtime download is needed.
-See the [installation guide](docs/INSTALL.md) for updates and removal.
+[Mac installation and approval guide](docs/INSTALL-MAC.md). Use Audio Units for
+Logic, or VST3 in a compatible host. Each Mac bundle contains both Apple Silicon
+and Intel code, targeting macOS 11 or later. See the dev release notes for tested
+systems. The Mac binaries have local ad-hoc signatures, with **no Developer ID
+signing or Apple notarization**; macOS may require manual approval.
+
+Windows and Mac are separate packages. Both preserve the same 1–8 channel VBAN
+stream format and automatic RX meter count. These are test builds.
 
 ## Editors
 
@@ -183,6 +192,26 @@ installer, portable ZIP, and source ZIP with:
 `out/releases/<version>`; neither command installs into the system VST3 folder.
 See [release building and verification](docs/RELEASING.md).
 
+## Build on macOS
+
+Install Xcode command-line tools, CMake 4.2 or later, Ninja, and Python 3.9 or later,
+then run:
+
+```bash
+bash Build-Mac.sh
+```
+
+The macOS preset builds arm64 and x86_64 together. The script runs the audio/VST3
+tests, applies local ad-hoc signatures, and creates a Mac .pkg, portable ZIP,
+source ZIP, and checksums in `out/releases/<version>/macos`. It does not install
+the plug-ins on your computer or require an Apple developer account.
+
+The manually triggered **macOS universal build** GitHub Actions workflow builds
+the packages, then tests the same installer and bundles natively on Apple Silicon
+and Intel runners, including VST3 host checks and Apple's Audio Unit validator.
+It uploads candidates and logs; public dev releases are published after checking
+the results. This workflow does not publish releases automatically.
+
 ## Tests and implementation
 
 The test suite covers PCM encoding, exact pass-through, saved state, real loopback
@@ -200,8 +229,7 @@ and preservation of unrelated files.
 This uses a temporary folder under `build/package-tests`; it does not install into
 your real VST3 folder. This multichannel build has passed the automated audio,
 plug-in loading, and isolated installer checks. Visual installer review and testing
-in additional DAWs are still welcome. No hosted build workflow is claimed: releases
-are currently built locally with Visual Studio 2026 Insiders.
+in additional DAWs are still welcome. Windows releases are built with Visual Studio 2026 Insiders; the manual Mac workflow uses GitHub-hosted macOS runners.
 
 Protocol code follows the [VBAN PCM specification](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf).
 Packets are capped at 1464 bytes, including the 28-byte header. Audio is little-endian

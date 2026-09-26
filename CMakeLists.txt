@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(VBANPlug VERSION 0.2.1 LANGUAGES C CXX)
+project(VBANPlug VERSION 0.3.0 LANGUAGES C CXX)
 # Keep the Windows release self-contained (no separate VC++ runtime installer).
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_STANDARD 17)
@@ -15,6 +15,11 @@ else()
         URL "https://github.com/juce-framework/JUCE/archive/${VBAND_JUCE_REVISION}.zip"
         URL_HASH SHA256=6f438c9ee4559dffcc600dfee60adba37bc137bdad63a75ab7b09f4e9b1a647b)
     FetchContent_MakeAvailable(juce)
+endif()
+
+set(vban_formats VST3 Standalone)
+if(APPLE)
+    list(APPEND vban_formats AU)
 endif()
 
 foreach(direction IN ITEMS TX RX)
@@ -33,7 +38,11 @@ foreach(direction IN ITEMS TX RX)
         PLUGIN_CODE ${plugin_code}
         PRODUCT_NAME "VBAN Plug ${direction}"
         DESCRIPTION "VBAN audio ${direction}"
-        FORMATS VST3 Standalone
+        FORMATS ${vban_formats}
+        LOCAL_NETWORK_PERMISSION_ENABLED TRUE
+        LOCAL_NETWORK_PERMISSION_TEXT "VBAN Plug sends and receives audio on your local network."
+        MICROPHONE_PERMISSION_ENABLED TRUE
+        MICROPHONE_PERMISSION_TEXT "VBAN Plug TX can send audio from your selected input device."
         IS_SYNTH FALSE NEEDS_MIDI_INPUT FALSE NEEDS_MIDI_OUTPUT FALSE IS_MIDI_EFFECT FALSE
         EDITOR_WANTS_KEYBOARD_FOCUS TRUE VST3_CATEGORIES Fx Network COPY_PLUGIN_AFTER_BUILD FALSE)
     target_sources(${plugin_target} PRIVATE
