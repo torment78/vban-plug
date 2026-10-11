@@ -1,8 +1,8 @@
 # Install VBAN Plug TX and RX
 
 Download the installer or portable ZIP from
-[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.3.0-dev).
-Version 0.3.0 is an unsigned Windows x64 multichannel test release.
+[GitHub Releases](https://github.com/torment78/vban-plug/releases/tag/v0.3.0).
+Version 0.3.0 is a stable Windows x64 release. The TX/RX binaries, installer, and uninstaller are digitally signed and timestamped as Mikael Frisberg (ElkaSoft).
 
 ## Installer
 

@@ -47,6 +47,6 @@ Donating is optional and does not affect installation.
 
 VBAN Plug is made by ElkaSoft. The VBAN protocol and Voicemeeter are by VB-Audio.
 See README.md for settings and technical details.
-This multichannel test release is unsigned.
+The stable Windows plug-ins, installer, and uninstaller are digitally signed and timestamped as Mikael Frisberg (ElkaSoft).
 GNU AGPL v3; see LICENSE and NOTICE.md.
 Source and releases: https://github.com/torment78/vban-plug

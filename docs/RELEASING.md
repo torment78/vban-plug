@@ -9,7 +9,7 @@ Run `./Build-Release.ps1` from the repository, or `./Build.ps1 -Package`. This u
 
 Inno Setup 6.6 or later is required. It is discovered on PATH or in `Program Files (x86)/Inno Setup 6`. Override its location with `-InnoCompiler`. `-SkipBuild` repackages an already tested Release build; it does not rebuild or rerun audio tests. The version comes from CMakeLists.txt. Intermediate staging directories are kept under ignored `out/staging` so stale files cannot leak into a release.
 
-The Microsoft C++ runtime is linked statically. No redistributable download is needed. Both complete VST3 bundles and third-party notices are included. The public test installer is unsigned. The project uses AGPLv3; LICENSE and NOTICE.md are included in the packages.
+The Microsoft C++ runtime is linked statically. No redistributable download is needed. Both complete VST3 bundles and third-party notices are included. Local builds are unsigned by default. Stable Windows releases use packaging/Sign-Windows.ps1 to sign and timestamp TX, RX, the uninstaller, and the final setup using SSL.com eSigner. The project uses AGPLv3; LICENSE and NOTICE.md are included in the packages.
 
 ## Installation and removal
 
@@ -27,7 +27,43 @@ The hidden command-line `/CURRENTUSER /DIR=...` mode routes plug-ins to `<DIR>/V
 
 `docs/images` contains vertical and wide PNG masters, each tagged/untagged. Both variants retain the ElkaSoft maker credit; tagged variants also show the Voicemeeter logo and `VBAN protocol by VB-Audio`. The README uses `social-preview-tagged.jpg`. Both social-preview JPGs are 1280 x 640 and below 1 MB, matching [GitHub's recommended preview size](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview). The public repository is https://github.com/torment78/vban-plug. See `installer/ASSETS.md` for asset provenance and generation prompts.
 
-## Mac dev packages
+## Signed Windows releases
+
+After testing the Release binaries, run the following in PowerShell 7 on the
+publisher's Windows account:
+
+```powershell
+.\Build-Release.ps1 -SkipBuild
+.\packaging\Prepare-WindowsSigning.ps1
+.\packaging\Sign-Windows.ps1
+```
+
+This uses the same SSL.com CodeSignTool flow as VBAN Stream. Its tool directory,
+SignTool path, Python command, and expected certificate thumbprint can be
+overridden by parameters. The SSL.com credential ID is read from
+`%LOCALAPPDATA%\ElkaSoft\Signing\esigner-credential-id.txt`; never commit it.
+Login and phone codes are entered in local dialogs, kept in memory, and redacted
+from tool output. Nothing opens a browser or requests credentials in chat.
+
+The first batch signs TX, RX, and Inno's prepared uninstaller. CodeSignTool uses
+temporary `.dll` names for the VST3 binaries; the original bundle names are
+restored afterwards. The script verifies the publisher and trusted timestamp,
+and checks that signing changed only PE signature metadata and appended
+certificate data. It packages those exact signed bytes without recompiling,
+then signs the final setup in a second batch and regenerates release checksums.
+
+Final verification installs twice into an isolated workspace folder, checks
+signatures on the setup, portable and installed plug-ins, and installed
+uninstaller, runs the audio/VST3 tests, and checks uninstall preservation.
+Logs remain under `out/signing/<version>` and `build/package-tests`.
+`-ResumeInstaller` resumes after a completed first batch without signing the
+plug-ins again. Never run a compile between signing and publication.
+
+Local builds are unsigned unless this signing flow is run. Publish only after
+the script reports `VERIFIED`, and verify uploaded hashes against the staged
+release files. The source ZIP includes build scripts, not credentials or logs.
+
+## Mac packages
 
 Run `bash Build-Mac.sh` on macOS with Xcode command-line tools, CMake 4.2+,
 Ninja, and Python 3.9+. The universal preset targets arm64 and x86_64 with a
@@ -45,7 +81,7 @@ and Intel runners, compare payload hashes, test real UDP/VST3 audio, and run
 Apple's AU validator. Logs and editor previews are uploaded separately. The
 installation validation script refuses to run outside GitHub Actions.
 
-Publish only candidates from a successful run. A dev release has a Windows
+Publish only candidates from a successful run. A release has a Windows
 section and a Mac section, each with separate installer, portable, source, and
 checksum links. Use SHA256-Windows.txt for the Windows manifest on the shared
 release page. Do not put both platforms into a combined ZIP. The internal

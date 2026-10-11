@@ -48,6 +48,12 @@ SetupLogging=yes
 CloseApplications=yes
 CloseApplicationsFilter=*.vst3
 RestartApplications=no
+#ifdef SignedUninstallerOutputDir
+SignedUninstaller=yes
+SignedUninstallerDir={#SignedUninstallerOutputDir}
+#else
+SignedUninstaller=no
+#endif
 
 [Files]
 Source: "{#PayloadDir}\VBAN Plug TX.vst3\*"; DestDir: "{code:Vst3Directory}\VBAN Plug TX.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs

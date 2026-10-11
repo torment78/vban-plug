@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — Stable Windows and Mac (2026-10-11)
+
+- Promote the tested 0.3.0 Windows and Mac plug-ins to stable.
+- Sign and timestamp the Windows TX/RX binaries, installer, and uninstaller using the same SSL.com publisher certificate as VBAN Stream.
+- Keep separate Windows and Mac downloads. The Mac packages are the unchanged universal build from 0.3.0-dev, with ad-hoc signatures and no Apple notarization.
+- Add repeatable Windows signing and installed-signature verification. Audio processing is unchanged.
+
 ## 0.3.0-dev — Windows and Mac dev build
 
 - Added universal Apple Silicon/Intel Mac VST3 and Audio Unit builds for TX and RX.

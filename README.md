@@ -8,7 +8,7 @@
 **RX** receives one matching stream and plays it in your audio host. Separate plug-ins,
 simple network settings, one horizontal meter per stream channel, and live packet counters.
 
-[**Dev build: Windows + Mac**](https://github.com/torment78/vban-plug/releases/tag/v0.3.0-dev)
+[**Stable release: Windows + Mac**](https://github.com/torment78/vban-plug/releases/tag/v0.3.0)
  · [Installation guide](docs/INSTALL.md)
  · [Report an issue](https://github.com/torment78/vban-plug/issues)
 
@@ -19,18 +19,18 @@ Free and open source under [AGPL-3.0](LICENSE). Donations support development an
 VBAN Plug is made by **ElkaSoft**. The **VBAN protocol** and **Voicemeeter** are by
 [VB-Audio](https://vb-audio.com/Voicemeeter/vban.htm).
 
-## Download the dev build
+## Download the stable release
 
-**0.3.0 dev build** provides separate Windows and Mac downloads. Choose your platform.
+**0.3.0 stable** provides separate Windows and Mac downloads. Choose your platform.
 
 ### Windows 10/11 x64
 
 | Download | Contents |
 | --- | --- |
-| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Windows-x64-Setup.exe) | TX and RX VST3, with the dark ElkaSoft installer. |
-| [Windows portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Windows-x64-Portable.zip) | Complete TX/RX bundles for manual installation. |
-| [Windows source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-Source.zip) | Source and dependencies used by the Windows build. |
-| [Windows checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/SHA256-Windows.txt) | Installer and ZIP checksums. |
+| [Windows installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-Windows-x64-Setup.exe) | TX and RX VST3, with the dark ElkaSoft installer. |
+| [Windows portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-Windows-x64-Portable.zip) | Complete TX/RX bundles for manual installation. |
+| [Windows source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-Source.zip) | Source and dependencies used by the Windows build. |
+| [Windows checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0/SHA256-Windows.txt) | Installer and ZIP checksums. |
 
 [Windows installation guide](docs/INSTALL.md). Close the host before installing,
 then rescan. Both bundles install to `C:\Program Files\Common Files\VST3`.
@@ -41,19 +41,19 @@ and Resources. No separate Microsoft Visual C++ runtime is needed.
 
 | Download | Contents |
 | --- | --- |
-| [Mac installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Universal.pkg) | TX/RX VST3 and Audio Units in the standard Mac plug-in folders. |
-| [Mac portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Universal.zip) | Universal TX/RX bundles for manual installation. |
-| [Mac source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/VBAN-Plug-0.3.0-macOS-Source.zip) | Source and dependencies used by the Mac build. |
-| [Mac checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0-dev/SHA256-macOS.txt) | Installer and ZIP checksums. |
+| [Mac installer](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-macOS-Universal.pkg) | TX/RX VST3 and Audio Units in the standard Mac plug-in folders. |
+| [Mac portable ZIP](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-macOS-Universal.zip) | Universal TX/RX bundles for manual installation. |
+| [Mac source with JUCE](https://github.com/torment78/vban-plug/releases/download/v0.3.0/VBAN-Plug-0.3.0-macOS-Source.zip) | Source and dependencies used by the Mac build. |
+| [Mac checksums](https://github.com/torment78/vban-plug/releases/download/v0.3.0/SHA256-macOS.txt) | Installer and ZIP checksums. |
 
 [Mac installation and approval guide](docs/INSTALL-MAC.md). Use Audio Units for
 Logic, or VST3 in a compatible host. Each Mac bundle contains both Apple Silicon
-and Intel code, targeting macOS 11 or later. See the dev release notes for tested
+and Intel code, targeting macOS 11 or later. See the release notes for tested
 systems. The Mac binaries have local ad-hoc signatures, with **no Developer ID
 signing or Apple notarization**; macOS may require manual approval.
 
 Windows and Mac are separate packages. Both preserve the same 1–8 channel VBAN
-stream format and automatic RX meter count. These are test builds.
+stream format and automatic RX meter count. Windows plug-ins, setup, and uninstaller are signed and timestamped as Mikael Frisberg. Mac retains its ad-hoc signatures; stable status does not imply Apple notarization.
 
 ## Editors
 
@@ -209,7 +209,7 @@ the plug-ins on your computer or require an Apple developer account.
 The manually triggered **macOS universal build** GitHub Actions workflow builds
 the packages, then tests the same installer and bundles natively on Apple Silicon
 and Intel runners, including VST3 host checks and Apple's Audio Unit validator.
-It uploads candidates and logs; public dev releases are published after checking
+It uploads candidates and logs; public releases are published after checking
 the results. This workflow does not publish releases automatically.
 
 ## Tests and implementation

@@ -32,7 +32,7 @@ Copy whole .vst3/.component bundles, not individual files from inside Contents.
 Reopen the host and rescan plug-ins. An AU host may need a logout/login to
 refresh its component list.
 
-## Approval for this test build
+## Approval on macOS
 
 This build has no Developer ID signature and has not been notarized by Apple.
 The binaries carry a local ad-hoc signature so Apple Silicon can load them;

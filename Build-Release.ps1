@@ -1,6 +1,7 @@
 param(
     [string]$InnoCompiler,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$SignedUninstallerDirectory
 )
 $ErrorActionPreference = 'Stop'
 $taskRoot = $PSScriptRoot
@@ -66,8 +67,14 @@ $taskPayloadHashes = Get-ChildItem -LiteralPath $taskPayload -File -Recurse | So
 }
 [IO.File]::WriteAllLines((Join-Path $taskPayload 'SHA256.txt'),[string[]]$taskPayloadHashes)
 & (Join-Path $taskRoot 'installer\Prepare-Assets.ps1')
-& $InnoCompiler "/DAppVersion=$taskVersion" "/DPayloadDir=$taskPayload" "/DOutputPath=$taskOutput" (Join-Path $taskRoot 'installer\VBAN-Plug.iss')
+$taskCompilerArguments = @("/DAppVersion=$taskVersion", "/DPayloadDir=$taskPayload", "/DOutputPath=$taskOutput")
+if ($SignedUninstallerDirectory) {
+    $taskCompilerArguments += "/DSignedUninstallerOutputDir=$([IO.Path]::GetFullPath($SignedUninstallerDirectory))"
+}
+& $InnoCompiler @taskCompilerArguments (Join-Path $taskRoot 'installer\VBAN-Plug.iss')
 if ($LASTEXITCODE) { throw 'Installer compilation failed.' }
+@{ version=$taskVersion; payload=$taskPayload; build=$taskBuild } | ConvertTo-Json |
+    Set-Content -LiteralPath (Join-Path $taskOutput 'packaging-state.json') -Encoding utf8
 $taskZip = Join-Path $taskOutput "VBAN-Plug-$taskVersion-Windows-x64-Portable.zip"
 Compress-Archive -LiteralPath $taskPayload -DestinationPath $taskZip -CompressionLevel Optimal -Force
 $taskSetup = Join-Path $taskOutput "VBAN-Plug-$taskVersion-Windows-x64-Setup.exe"
