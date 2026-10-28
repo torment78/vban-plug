@@ -23,9 +23,9 @@ Run `./packaging/Test-Release.ps1` after packaging. It expands the ZIP, verifies
 
 The hidden command-line `/CURRENTUSER /DIR=...` mode routes plug-ins to `<DIR>/VST3` for this verification. Normal double-click setup always uses the standard all-users VST3 location. The test requires that no previous current-user test registration exists, so it cannot replace one accidentally. It does not install into the real VST3 folder.
 
-## Artwork for the later GitHub setup
+## Artwork and repository previews
 
-`docs/images` contains vertical and wide PNG masters, each tagged/untagged. Both variants retain the ElkaSoft maker credit; tagged variants also show the Voicemeeter logo and `VBAN protocol by VB-Audio`. The README uses `social-preview-tagged.jpg`. Both social-preview JPGs are 1280 x 640 and below 1 MB, matching [GitHub's recommended preview size](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview). The public repository is https://github.com/torment78/vban-plug. See `installer/ASSETS.md` for asset provenance and generation prompts.
+`docs/images` contains vertical and wide PNG masters, each tagged/untagged. Both variants retain the ElkaSoft maker credit; tagged variants also show the Voicemeeter logo and `VBAN protocol by VB-Audio`. The README uses `social-preview-tagged.jpg`. Both social-preview JPGs are 1280 x 640 and below 1 MB, matching [GitHub's recommended preview size](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview). The public repository is https://github.com/torment78/vban-plug. See `installer/ASSETS.md` for the asset inventory and branding credits.
 
 ## Signed Windows releases
 

@@ -21,7 +21,7 @@ ElkaSoft-created mark. The project licence does not grant rights to third-party
 trademarks. This project is not endorsed by or affiliated with VB-Audio or Steinberg.
 
 The original ElkaSoft logo was supplied by the project owner. The waveform icon
-and promotional artwork were generated for this project; see installer/ASSETS.md.
+and promotional artwork are included with this project; see installer/ASSETS.md.
 ElkaSoft branding identifies the original project. Retaining licence notices does
 not require presenting modified software as an official ElkaSoft release.
 
